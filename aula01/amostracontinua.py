@@ -1,65 +1,58 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os 
 
 
-def main():
+f = 1000  
+fs = 8000 
+duracao = 1 
+amplitude = 16384 # Define a amplitude do sinal para 16384 (máximo para int16)
 
-    amplitude = 16384
-    dt = 5e-5  # Corresponde a Dt = 5*10^-5
-    t = np.arange(-5e-3, 5e-3 + dt, dt)  # Corresponde a t = -5*10^-3:Dt:5*10^-3
+# Sinal analógico (simulado com alta resolução)
+dt = 1 / (fs * 10) # Intervalo de tempo para simulação de alta resolução
+t = np.arange(0, duracao, dt) # Gerar sinal por 1 segundo
+xa = amplitude * np.cos(2 * np.pi * f * t)
 
+# Sinal discreto
+ts = 1 / fs # Período de amostragem
+n = np.arange(0, int(duracao * fs)) # Gerar amostras para 1 segundo
+xd = amplitude * np.cos(2 * np.pi * n * f / fs) # Adiciona a amplitude ao sinal discreto
 
-    f = 1000  # Frequência em Hz
-    xa = np.cos(2 * np.pi * f * t)  # Corresponde a xa = cos(2*pi*f*t)
+# Plota o sinal analógico
+plt.figure(figsize=(10, 8))
+plt.subplot(2, 1, 1)
+plt.plot(t, xa) # Plotar em segundos
+plt.xlabel('Tempo [s]')
+plt.ylabel('xa(t)')
+plt.title(f'Sinal de Freq = {f}Hz ({duracao}s)')
+plt.grid(True)
 
-
-    fs = 8000  # Frequência de amostragem em Hz
-    ts = 1 / fs  # Período de amostragem
-
-
-    n = np.arange(-20, 21, 1)  # Corresponde a n = -20:1:20
-    # Calcula o sinal discreto (amostrado)
-    xd = amplitude * np.cos(2  * np.pi * n * f / fs)
-
-
-    plt.figure(figsize=(10, 8))
-
-
-    ax1 = plt.subplot(2, 1, 1)
-
-    # Plota o sinal "analógico"
-    ax1.plot(t * 1000 , xa, label='Sinal "Analógico" xa(t)')
-
-    ax1.stem(n * ts * 1000, xd, linefmt='r-', markerfmt='ro', basefmt='r-', label='Amostras x[n]')
-
-    # Configurações do primeiro gráfico
-    ax1.set_xlabel('Tempo [ms]')
-    ax1.set_ylabel('Amplitude')
-    ax1.set_title(f'Sinal de Frequência = {f} Hz e Amostragem com Fs = {fs} Hz')
-    ax1.grid(True)
-    ax1.legend()  # Adiciona a legenda
+# Sinal discreto
+# Plota o sinal discreto no mesmo gráfico do sinal analógico
+plt.stem(n * ts, xd, 'r', label='Sinal Amostrado') # Plotar em segundos
+plt.legend()
 
 
-    ax2 = plt.subplot(2, 1, 2)
+# Plota o sinal amostrado em um gráfico separado
+plt.subplot(2, 1, 2)
+plt.stem(n, xd)
+plt.title('Sinal Amostrado')
+plt.xlabel('Amostras')
+plt.ylabel('x[n]')
+plt.grid(True)
 
+plt.tight_layout()
+plt.show()
 
-    ax2.stem(n, xd)
+# Salvar o sinal discreto como arquivo .pcm
+# Converter o sinal para inteiros de 16 bits
+sinal_int16 = xd.astype(np.int16)
 
-    # Configurações do segundo gráfico
-    ax2.set_xlabel('Índice da Amostra (n)')
-    ax2.set_ylabel('Amplitude x[n]')
-    ax2.set_title('Sinal Amostrado (Domínio Discreto)')
-    ax2.grid(True)
+# Definir o nome do arquivo
+nome_arquivo = 'sinal_senoidal.pcm'
 
-    # Ajusta o layout para evitar sobreposição de títulos e eixos
-    plt.tight_layout()
+# Salvar o arquivo .pcm
+with open(nome_arquivo, 'wb') as f:
+    f.write(sinal_int16.tobytes())
 
-    # Exibe os gráficos
-    plt.show()
-
-
-
-
-# Ponto de entrada do script
-if __name__ == '__main__':
-    main()
+print(f'Sinal salvo como "{nome_arquivo}"')
