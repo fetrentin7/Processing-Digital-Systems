@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 
 # Parâmetros do sinal
-fs = 8000  # Frequência de amostragem
+fs =   100# Frequência de amostragem
 duracao = 1  # Duração total da simulação em segundos
 amplitude = 16384  # Amplitude do sinal
 
