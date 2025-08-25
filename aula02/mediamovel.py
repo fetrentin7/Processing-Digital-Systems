@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import struct
 
 def media_movel(vetor_entrada, k):
     """
@@ -53,67 +52,67 @@ def media_movel(vetor_entrada, k):
         vetor_saida.append(saida_filtro)
 
         # Imprime o estado atual para fins de depuração e aprendizado.
-        # print(f"Passo {i+1}: Entrada = {vetor_entrada[i]}")
-        # print(f"  -> Vetor de Amostras: {np.round(vetor_amostras, 4)}")
-        # print(f"  -> Saída do Filtro:   {round(saida_filtro, 4)}\n")
+        print(f"Passo {i+1}: Entrada = {vetor_entrada[i]}")
+        print(f"  -> Vetor de Amostras: {np.round(vetor_amostras, 4)}")
+        print(f"  -> Saída do Filtro:   {round(saida_filtro, 4)}\n")
 
 
     return vetor_saida
 
-# --- Exemplo de Uso com arquivo PCM ---
+# --- Exemplo de Uso ---
 
-# Definição dos parâmetros do filtro
-k_janela = 50    # Tamanho da janela do filtro (k)
-pcm_file_path = '/content/sweep_20_3k4.pcm' # Substitua pelo caminho do seu arquivo .pcm
+# Definição dos parâmetros do filtro e do sinal
+n_valores = 15  # Tamanho do vetor de entrada (n)
+k_janela = 10    # Tamanho da janela do filtro (k)
 
-# Função para ler dados de um arquivo PCM
-def read_pcm(file_path):
-    """Reads 16-bit signed integer data from a raw PCM file."""
-    data = []
-    try:
-        with open(file_path, 'rb') as f:
-            while True:
-                sample_bytes = f.read(2)  # Read 2 bytes for 16-bit audio
-                if not sample_bytes:
-                    break
-                sample = struct.unpack('<h', sample_bytes)[0] # '<h' for little-endian signed short
-                data.append(sample)
-    except FileNotFoundError:
-        print(f"Error: File not found at {file_path}")
-        return None
-    except Exception as e:
-        print(f"Error reading file: {e}")
-        return None
-    return np.array(data)
+# Geração do sinal de entrada: um impulso unitário.
+# É um sinal que tem o valor 1.0 na primeira amostra e 0.0 nas demais.
+sinal_impulso_unitario = np.zeros(n_valores)
+sinal_impulso_unitario[0] = 1.0
 
-# Leitura do arquivo PCM
-sinal_entrada_pcm = read_pcm(pcm_file_path)
+print("--- Iniciando Simulação do Filtro de Média Móvel ---")
+print(f"Sinal de Entrada (Impulso Unitário de {n_valores} amostras):\n{sinal_impulso_unitario}\n")
 
-if sinal_entrada_pcm is not None:
-    print("--- Iniciando Simulação do Filtro de Média Móvel com arquivo PCM ---")
-    print(f"Sinal de Entrada lido do arquivo PCM (primeiras 10 amostras):\n{sinal_entrada_pcm[:10]}\n")
+# Chama a função para aplicar o filtro de média móvel no sinal.
+sinal_filtrado = media_movel(sinal_impulso_unitario, k_janela)
 
-    # Chama a função para aplicar o filtro de média móvel no sinal.
-    sinal_filtrado_pcm = media_movel(sinal_entrada_pcm, k_janela)
-
-    print("--- Resultado Final ---")
-    print(f"Sinal de Saída Filtrado (primeiras 10 amostras):\n{[round(x, 4) for x in sinal_filtrado_pcm[:10]]}")
+print("--- Resultado Final ---")
+print(f"Sinal de Saída Filtrado:\n{[round(x, 4) for x in sinal_filtrado]}")
 
 
-    # --- Plotagem dos Sinais ---
-    plt.figure(figsize=(12, 6))
-    plt.style.use('seaborn-v0_8-whitegrid')
+# --- Plotagem dos Sinais ---
+plt.figure(figsize=(12, 6))
+plt.style.use('seaborn-v0_8-whitegrid')
 
-    # Plota o sinal de entrada do arquivo PCM
-    plt.plot(sinal_entrada_pcm, label='Sinal de Entrada (PCM)')
+# Plota o sinal de entrada (impulso)
+plt.stem(range(n_valores), sinal_impulso_unitario, linefmt='b-', markerfmt='bo', basefmt=' ', label='Sinal de Entrada (Impulso)')
 
-    # Plota o sinal de saída (filtrado)
-    plt.plot(sinal_filtrado_pcm, label=f'Sinal de Saída (Média Móvel, k={k_janela})')
+# Plota o sinal de saída (filtrado)
+plt.stem(range(n_valores), sinal_filtrado, linefmt='r-', markerfmt='ro', basefmt=' ', label=f'Sinal de Saída (Resposta ao Impulso, k={k_janela})')
 
-    plt.title('Aplicação do Filtro de Média Móvel em Sinal PCM', fontsize=16)
-    plt.xlabel('Amostra', fontsize=12)
-    plt.ylabel('Amplitude', fontsize=12)
-    plt.legend(fontsize=10)
-    plt.show()
-else:
-    print("Não foi possível carregar o arquivo PCM.")
+plt.title('Resposta ao Impulso do Filtro de Média Móvel', fontsize=16)
+plt.xlabel('Amostra (n)', fontsize=12)
+plt.ylabel('Amplitude', fontsize=12)
+plt.xticks(range(n_valores))
+plt.legend(fontsize=10)
+plt.ylim(-0.1, 1.1)
+plt.show()
+
+NOME_ARQUIVO_PCM = "resposta_impulso.pcm"
+
+print(f"\n--- Salvando o sinal de saída como dados PCM brutos em '{NOME_ARQUIVO_PCM}' ---")
+
+
+sinal_escalado = np.array(sinal_filtrado) * 30000
+
+# 2. Converter o sinal para o tipo de dados de inteiros de 16 bits (int16)
+sinal_int16 = sinal_escalado.astype(np.int16)
+
+# 3. Salvar os bytes brutos do array no arquivo .pcm, como solicitado
+with open(NOME_ARQUIVO_PCM, 'wb') as f:
+    f.write(sinal_int16.tobytes())
+
+
+
+
+

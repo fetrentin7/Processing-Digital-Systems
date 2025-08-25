@@ -116,4 +116,4 @@ if sinal_entrada_pcm is not None:
     plt.legend(fontsize=10)
     plt.show()
 else:
-    print("Não foi possível carregar o arquivo PCM.")
+    print("Não foi possível carregar o arquivo PCM.") 
