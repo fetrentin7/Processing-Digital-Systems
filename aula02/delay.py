@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 Fs = 8000
 t1 = 1.0e-3
 t2 = 1.5e-3
-
+delay = 0.15
 # Exemplo de delay
-n1 = int(t1 * Fs)
-n2 = int(t2 * Fs)
+n1 = int(delay * Fs)
+n2 = int(delay * Fs)
 
 # Ganhos
 a0 = 0.5
