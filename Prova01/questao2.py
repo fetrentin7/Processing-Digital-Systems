@@ -20,7 +20,7 @@ h = (0.5)**n
 y_completo = np.convolve(x, h)
 
 # O resultado da convolução é mais longo. Pegamos apenas os valores
-# correspondentes ao nosso intervalo de interesse (n de 0 a 8).
+# correspondentes ao  intervalo de interesse (n de 0 a 8).
 y = y_completo[:9]
 
 
