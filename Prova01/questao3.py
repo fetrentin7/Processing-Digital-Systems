@@ -12,21 +12,20 @@ b = [1, -1]
 # Coeficientes do denominador (polinômio em z^-1 associado a y[n])
 a = [1, -0.95]
 
-# Define o sistema LTI para as funções da biblioteca SciPy.
+# Define o sistema LTI 
 # O terceiro argumento '1' representa o tempo de amostragem dt=1.
 system = (b, a, 1)
 
 # --- Cálculo das Respostas ---
 
-# Define o número de amostras (pontos no tempo) que queremos calcular e plotar.
-# 60 amostras são suficientes para ver o comportamento de decaimento do sistema.
-n_samples = 60
+# Define o número de amostras 
+n_samples = 30
 
 # a) Cálculo da Resposta ao Impulso
 # A função dimpulse calcula a saída h[n] quando a entrada é um impulso unitário.
 t_impulse, h = signal.dimpulse(system, n=n_samples)
 
-# A saída de 'dimpulse' é um array 2D, usamos squeeze para converter para 1D.
+# A saída de 'dimpulse' é um array 2D,  squeeze para converter para 1D.
 h = np.squeeze(h)
 
 # b) Cálculo da Resposta ao Degrau
@@ -44,8 +43,7 @@ plt.figure(figsize=(14, 6))
 
 # Gráfico 1: Resposta ao Impulso
 plt.subplot(1, 2, 1) # (1 linha, 2 colunas, 1º gráfico)
-# A função stem é usada para plotar sinais de tempo discreto.
-# A correção da versão do Matplotlib foi aplicada aqui (sem 'use_line_collection').
+
 plt.stem(t_impulse, h)
 plt.title('a) Resposta ao Impulso $h[n]$')
 plt.xlabel('Amostra (n)')
@@ -54,7 +52,7 @@ plt.grid(True) # Adiciona uma grade para melhor visualização
 
 # Gráfico 2: Resposta ao Degrau
 plt.subplot(1, 2, 2) # (1 linha, 2 colunas, 2º gráfico)
-# Correção também aplicada nesta linha.
+
 plt.stem(t_step, s)
 plt.title('b) Resposta ao Degrau $s[n]$')
 plt.xlabel('Amostra (n)')

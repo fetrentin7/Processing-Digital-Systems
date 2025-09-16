@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# --- 1. Definição dos Sinais ---
 
 # Define o intervalo de tempo para o cálculo e plotagem (n de 0 a 8)
 n = np.arange(9)
@@ -17,7 +16,7 @@ h = (0.5)**n
 
 # --- 2. Cálculo da Convolução ---
 
-# Calcula a convolução y[n] = x[n] * h[n] usando a função do NumPy
+# Calcula a convolução y[n] = x[n] * h[n] 
 y_completo = np.convolve(x, h)
 
 # O resultado da convolução é mais longo. Pegamos apenas os valores
