@@ -15,8 +15,7 @@ w = np.arange(-np.pi, np.pi, np.pi / 1000)
 
 # Calcula a TFD de forma geral e eficiente
 # np.outer(w, n_vec) cria uma matriz onde cada elemento (i, k) é w[i] * n_vec[k]
-# Em seguida, calculamos o exponencial complexo para cada elemento
-# Finalmente, somamos ao longo do eixo n (axis=1) para obter o valor de X para cada w
+ # Finalmente, somamos ao longo do eixo n (axis=1) para obter o valor de X para cada w
 X = np.sum(np.exp(-1j * np.outer(w, n_vec)), axis=1)
 
 # Calcula o Módulo (Magnitude) e a Fase de X
