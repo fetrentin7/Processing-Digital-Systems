@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from scipy.signal import freqz
 
 def get_coeffs_from_user(prompt):
-    """Função para pegar os coeficientes do usuário de forma segura."""
     while True:
         try:
             input_str = input(prompt)
@@ -107,7 +106,6 @@ axs_freq_hz[1].grid(True)
 # PARTE 3: CÁLCULO E PLOTAGEM DA RESPOSTA EM FREQUÊNCIA (Normalizada)
 # ===================================================================
 
-# w and h are already calculated from freqz
 
 # Cria a figura para a resposta em frequência normalizada
 fig_freq_norm, axs_freq_norm = plt.subplots(2, 1, figsize=(10, 8))
