@@ -1,0 +1,44 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import signal
+
+numerador = [0.7294, -2.1883, 2.1883, -0.7294]
+denominador = [1, -2.3741, 1.9294, -0.5321]
+fs = 8000
+duracao = 0.1
+tempo = np.linspace(0, duracao, int(fs * duracao), endpoint=False)
+
+frequencia1 = 100
+senoide1 = np.sin(2 * np.pi * frequencia1 * tempo)
+saida1 = signal.lfilter(numerador, denominador, senoide1)
+
+frequencia2 = 1000
+senoide2 = np.sin(2 * np.pi * frequencia2 * tempo)
+saida2 = signal.lfilter(numerador, denominador, senoide2)
+
+indice_estavel = len(tempo) // 2
+rms_entrada1 = np.sqrt(np.mean(senoide1[indice_estavel:]**2))
+rms_saida1 = np.sqrt(np.mean(saida1[indice_estavel:]**2))
+atenuacao_db_1 = 20 * np.log10(rms_saida1 / rms_entrada1)
+rms_entrada2 = np.sqrt(np.mean(senoide2[indice_estavel:]**2))
+rms_saida2 = np.sqrt(np.mean(saida2[indice_estavel:]**2))
+atenuacao_db_2 = 20 * np.log10(rms_saida2 / rms_entrada2)
+
+figura, eixos = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
+figura.suptitle('Simulação da Filtragem de Senóides', fontsize=16)
+
+eixos[0].plot(tempo, senoide1, label='Entrada (senoide1)', linestyle='--')
+eixos[0].plot(tempo, saida1, label=f'Saída (saida1) - Atenuação: {atenuacao_db_1:.2f} dB')
+eixos[0].set_title('Filtragem do Sinal de 100 Hz')
+eixos[0].legend()
+eixos[0].grid(True)
+
+eixos[1].plot(tempo, senoide2, label='Entrada (senoide2)', linestyle='--')
+eixos[1].plot(tempo, saida2, label=f'Saída (saida2) - Atenuação: {atenuacao_db_2:.2f} dB')
+eixos[1].set_title('Filtragem do Sinal de 1000 Hz')
+eixos[1].legend()
+eixos[1].grid(True)
+
+figura.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+plt.show()
