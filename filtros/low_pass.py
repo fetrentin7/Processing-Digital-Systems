@@ -45,8 +45,5 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-# ...existing code...
-
-# Valor da resposta em frequência na frequência de corte
 idx_fc = np.argmin(np.abs(frequencia_normalizada - FC))
 print(f"Resposta em frequência na frequência de corte (FC={FC}): {20*np.log10(np.abs(H[idx_fc]) / np.max(np.abs(H))):.2f} dB")
