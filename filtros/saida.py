@@ -25,28 +25,30 @@ h = h / soma
 w, H = signal.freqz(h, worN=1024)
 frequencia_normalizada = w / (2 * np.pi)
 
-# Exemplo de plot do kernel do filtro
-plt.stem(np.arange(N), h)
-plt.title('Coeficientes do Filtro Passa-Baixas (Janela de Hamming)')
-plt.xlabel('Amostra')
-plt.ylabel('Amplitude')
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+n_amostras = 200
+n = np.arange(n_amostras)
+frequencia_sinal = 0.05  # frequência normalizada do sinal de entrada
+x = np.sin(2 * np.pi * frequencia_sinal * n)
 
-
+# Saída do filtro FIR: y[n] = h0*x[n] + h1*x[n-1] + ... + hM*x[n-M]
+y = np.convolve(x, h, mode='full')[:n_amostras]
 
 plt.figure(figsize=(10, 5))
-plt.plot(frequencia_normalizada, 20 * np.log10(np.abs(H) / np.max(np.abs(H))))
-plt.title('Resposta em Frequência do Filtro Passa-Baixas')
-plt.xlabel('Frequência Normalizada (ciclos/amostra)')
-plt.ylabel('Magnitude (dB)')
+plt.plot(n, x, label='Entrada x[n]')
+plt.plot(n, y, label='Saída y[n]')
+plt.title('Resposta do Filtro FIR à Entrada x[n]')
+plt.xlabel('n')
+plt.ylabel('Amplitude')
+plt.legend()
 plt.grid(True)
 plt.tight_layout()
 plt.show()
+
+
+idx_fc = np.argmin(np.abs(frequencia_normalizada - FC))
+print(f"Resposta em frequência na frequência de corte (FC={FC}): {20*np.log10(np.abs(H[idx_fc]) / np.max(np.abs(H))):.2f} dB")
 
 # ...existing code...
 
-# Valor da resposta em frequência na frequência de corte
-idx_fc = np.argmin(np.abs(frequencia_normalizada - FC))
-print(f"Resposta em frequência na frequência de corte (FC={FC}): {20*np.log10(np.abs(H[idx_fc]) / np.max(np.abs(H))):.2f} dB")
+# Salva o vetor h em um arquivo txt
+np.savetxt("coeficientes_filtro.txt", h, fmt="%.10f")
