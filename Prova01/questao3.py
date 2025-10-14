@@ -2,11 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
 
-# --- Definição do Sistema ---
-# A equação de diferenças é: y[n] - 0.95y[n-1] = x[n] - x[n-1]
-# A função de transferência correspondente é H(z) = (1 - z^-1) / (1 - 0.95z^-1)
 
-# Coeficientes do numerador (polinômio em z^-1 associado a x[n])
 b = [1, -1]
 
 # Coeficientes do denominador (polinômio em z^-1 associado a y[n])
@@ -32,7 +28,6 @@ h = np.squeeze(h)
 # A função dstep calcula a saída s[n] quando a entrada é um degrau unitário.
 t_step, s = signal.dstep(system, n=n_samples)
 
-# Converte a saída para um array 1D para facilitar a plotagem.
 s = np.squeeze(s)
 
 
