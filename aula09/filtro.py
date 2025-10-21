@@ -10,6 +10,7 @@ i = np.arange(M)
 hamming = 0.54 - 0.46 * np.cos(2 * np.pi * i / (M - 1))
 blackman = 0.42 - 0.5 * np.cos(2 * np.pi * i / (M - 1)) + 0.08 * np.cos(4 * np.pi * i / (M - 1))
 
+
 # Calcula resposta em frequência H(e^{jω}) com freqz
 w_h, H_h = signal.freqz(hamming, worN=4096)    # w em rad/sample
 w_b, H_b = signal.freqz(blackman, worN=4096)
