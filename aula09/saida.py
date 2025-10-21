@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 
-FC = 0.14  # frequência de corte (entre 0 e 0.5)
-M_values = [20, 40, 100]  # diferentes comprimentos do filtro
+FC = 0.14  
+M_values = [20, 40, 100, 200]
 
 plt.figure(figsize=(10, 5))
 
