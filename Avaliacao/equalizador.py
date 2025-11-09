@@ -1,70 +1,140 @@
-from hp_lp_coef import shelving_low, shelving_high
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import lfilter, chirp, freqz
-from scipy.fft import rfft, rfftfreq
+from scipy.signal import lfilter, freqz
+from hp_lp_coef import shelving_low, shelving_high, mf_peak
 
-# ============================
-fs = 44100
-t = np.linspace(0, 5, int(5*fs))
-sweep = chirp(t, f0=20, f1=fs/2, t1=5, method='logarithmic')
+# ==========================
+# Parâmetros gerais
+# ==========================
+FS = 44100
+SWEEP_PATH = "Avaliacao/sweep_20_3k4.pcm"
+
+GAIN_LF_DB = 6
+GAIN_PEAK_DB = 10
+GAIN_HF_DB = -6
+FC_LF_HZ = 200
+FC_PEAK_HZ = 1000
+FB_PEAK_HZ = 400
+FC_HF_HZ = 8000
+
+# ==========================
+# Leitura do sweep
+# ==========================
+sweep = np.fromfile(SWEEP_PATH, dtype=np.int16).astype(np.float32)
 sweep /= np.max(np.abs(sweep))
+t = np.linspace(0, len(sweep)/FS, len(sweep))
+f = np.fft.rfftfreq(len(sweep), 1/FS)
 
+# ==========================
+# Cálculo dos coeficientes
+# ==========================
+b_lf, a_lf = shelving_low(FS, FC_LF_HZ, GAIN_LF_DB)
+b_peak, a_peak = mf_peak(FS, FC_PEAK_HZ, FB_PEAK_HZ, GAIN_PEAK_DB)
+b_hf, a_hf = shelving_high(FS, FC_HF_HZ, GAIN_HF_DB)
 
-b_lf, a_lf = shelving_low(fs, 200, 8)
-b_hf, a_hf = shelving_high(fs, 8000, 8)
+# ==========================
+# Aplicação individual
+# ==========================
+y_lf = lfilter(b_lf, a_lf, sweep)
+y_peak = lfilter(b_peak, a_peak, sweep)
+y_hf = lfilter(b_hf, a_hf, sweep)
 
-s_lf = lfilter(b_lf, a_lf, sweep)
-s_hf = lfilter(b_hf, a_hf, sweep)
+# ==========================
+# Cascata — Equalizador completo
+# ==========================
+y_eq = lfilter(b_lf, a_lf, sweep)
+y_eq = lfilter(b_peak, a_peak, y_eq)
+y_eq = lfilter(b_hf, a_hf, y_eq)
 
+# convolução:
+b_eq = np.convolve(np.convolve(b_lf, b_peak), b_hf)
+a_eq = np.convolve(np.convolve(a_lf, a_peak), a_hf)
 
-def compute_spectrum(signal, fs):
-    N = len(signal)
-    freqs = rfftfreq(N, 1/fs)
-    mag = 20 * np.log10(np.abs(rfft(signal)) + 1e-9)
-    return freqs, mag
+# ==========================
+# Respostas em frequência (freqz)
+# ==========================
+w, H_lf = freqz(b_lf, a_lf, worN=4096, fs=FS)
+_, H_peak = freqz(b_peak, a_peak, worN=4096, fs=FS)
+_, H_hf = freqz(b_hf, a_hf, worN=4096, fs=FS)
+_, H_eq = freqz(b_eq, a_eq, worN=4096, fs=FS)
 
-freqs, mag_in = compute_spectrum(sweep, fs)
-_, mag_lf = compute_spectrum(s_lf, fs)
-_, mag_hf = compute_spectrum(s_hf, fs)
+# ==========================
+# Plot geral
+# ==========================
+fig, axs = plt.subplots(4, 2, figsize=(12, 12))
+plt.suptitle("Validação do Equalizador — Filtros em Cascata com Sweep", fontsize=14)
 
+# ---- 1. LOW-SHELF ----
+axs[0,0].plot(t, sweep, color='gray', alpha=0.5)
+axs[0,0].plot(t, y_lf, color='r')
+axs[0,0].set_title("Low-Shelf - Domínio do Tempo")
+axs[0,0].set_xlabel("Tempo [s]")
+axs[0,0].set_ylabel("Amplitude")
+axs[0,0].grid(True)
 
-w_lf, h_lf = freqz(b_lf, a_lf, worN=2048)
-w_hf, h_hf = freqz(b_hf, a_hf, worN=2048)
-freqz_lf = w_lf * fs / (2 * np.pi)
-freqz_hf = w_hf * fs / (2 * np.pi)
-H_lf_dB = 20 * np.log10(np.abs(h_lf))
-H_hf_dB = 20 * np.log10(np.abs(h_hf))
+axs[0,1].semilogx(f, 20*np.log10(np.abs(np.fft.rfft(y_lf))+1e-9), color='r')
+axs[0,1].semilogx(w, 20*np.log10(np.abs(H_lf)), '--', color='k', alpha=0.5, label='Teórica')
+axs[0,1].set_title("Low-Shelf - Espectro")
+axs[0,1].set_xlabel("Frequência [Hz]")
+axs[0,1].set_ylabel("Magnitude [dB]")
+axs[0,1].grid(True, which='both', linestyle=':')
+axs[0,1].legend()
 
+# ---- 2. PEAK ----
+axs[1,0].plot(t, sweep, color='gray', alpha=0.5)
+axs[1,0].plot(t, y_peak, color='g')
+axs[1,0].set_title("Peak - Domínio do Tempo")
+axs[1,0].set_xlabel("Tempo [s]")
+axs[1,0].set_ylabel("Amplitude")
+axs[1,0].grid(True)
 
-plt.figure(figsize=(10, 7))
+axs[1,1].semilogx(f, 20*np.log10(np.abs(np.fft.rfft(y_peak))+1e-9), color='g')
+axs[1,1].semilogx(w, 20*np.log10(np.abs(H_peak)), '--', color='k', alpha=0.5, label='Teórica')
+axs[1,1].set_title("Peak - Espectro")
+axs[1,1].set_xlabel("Frequência [Hz]")
+axs[1,1].set_ylabel("Magnitude [dB]")
+axs[1,1].grid(True, which='both', linestyle=':')
+axs[1,1].legend()
 
-# Cria dois gráficos (2 linhas, 1 coluna)
-fig, axs = plt.subplots(2, 1, figsize=(10, 8))
+# ---- 3. HIGH-SHELF ----
+axs[2,0].plot(t, sweep, color='gray', alpha=0.5)
+axs[2,0].plot(t, y_hf, color='b')
+axs[2,0].set_title("High-Shelf - Domínio do Tempo")
+axs[2,0].set_xlabel("Tempo [s]")
+axs[2,0].set_ylabel("Amplitude")
+axs[2,0].grid(True)
 
-# --- LOW-SHELF ---
-axs[0].semilogx(freqs, mag_in, label="Input (Sweep)", color="C0", alpha=0.6)
-axs[0].semilogx(freqs, mag_lf, label="Low-shelf (real)", color="C1")
-axs[0].semilogx(freqz_lf, H_lf_dB + mag_in.max() - H_lf_dB.max(),
-                "--", color="C1", alpha=0.8, label="Low-shelf (teórica)")
-axs[0].set_title("Low-Shelf: resposta real (FFT) vs teórica (freqz)")
-axs[0].set_xlabel("Frequência [Hz]")
-axs[0].set_ylabel("Magnitude [dB]")
-axs[0].grid(True, which="both")
-axs[0].legend()
-axs[0].set_xlim(20, 8000)
+axs[2,1].semilogx(f, 20*np.log10(np.abs(np.fft.rfft(y_hf))+1e-9), color='b')
+axs[2,1].semilogx(w, 20*np.log10(np.abs(H_hf)), '--', color='k', alpha=0.5, label='Teórica')
+axs[2,1].set_title("High-Shelf - Espectro")
+axs[2,1].set_xlabel("Frequência [Hz]")
+axs[2,1].set_ylabel("Magnitude [dB]")
+axs[2,1].grid(True, which='both', linestyle=':')
+axs[2,1].legend()
 
-# --- HIGH-SHELF ---
-axs[1].semilogx(freqs, mag_in, label="Input (Sweep)", color="C0", alpha=0.6)
-axs[1].semilogx(freqs, mag_hf, label="High-shelf (real)", color="C2")
-axs[1].semilogx(freqz_hf, H_hf_dB + mag_in.max() - H_hf_D B.max(),
-                "--", color="C2", alpha=0.8, label="High-shelf (teórica)")
-axs[1].set_title("High-Shelf: resposta real (FFT) vs teórica (freqz)")
-axs[1].set_xlabel("Frequência [Hz]")
-axs[1].set_ylabel("Magnitude [dB]")
-axs[1].grid(True, which="both")
-axs[1].legend()
-axs[1].set_xlim(20, 8000)
+# ---- 4. EQUALIZADOR COMPLETO ----
+axs[3,0].plot(t, sweep, color='gray', alpha=0.5, label='Entrada (sweep)')
+axs[3,0].plot(t, y_eq, color='black', label='Saída Equalizada')
+axs[3,0].set_title("Equalizador Completo - Domínio do Tempo")
+axs[3,0].set_xlabel("Tempo [s]")
+axs[3,0].set_ylabel("Amplitude")
+axs[3,0].legend()
+axs[3,0].grid(True)
 
-plt.tight_layout()
+axs[3,1].semilogx(f, 20*np.log10(np.abs(np.fft.rfft(y_eq))+1e-9), color='black', label='Saída')
+axs[3,1].semilogx(w, 20*np.log10(np.abs(H_eq)), '--', color='gray', alpha=0.6, label='Teórica (Cascata)')
+axs[3,1].set_title("Equalizador Completo - Espectro de Saída")
+axs[3,1].set_xlabel("Frequência [Hz]")
+axs[3,1].set_ylabel("Magnitude [dB]")
+axs[3,1].grid(True, which='both', linestyle=':')
+axs[3,1].legend()
+
+plt.tight_layout(rect=[0, 0, 1, 0.97])
 plt.show()
+
+
+# Exporta o resultado PCM final
+
+y_eq = y_eq / np.max(np.abs(y_eq))
+np.int16(y_eq * 32767).tofile("saida_equalizador.pcm")
+
