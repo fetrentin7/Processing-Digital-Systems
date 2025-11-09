@@ -1,37 +1,26 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import scipy.signal as signal
+# 1-a H(Z) = 1 + H0/2 * [1+ A(Z)]
 
-# --- Parâmetros ---
-fs = 48000
-fc = 500
-G = 10  #(+ para boost, - para cut)
+# A(Z) = (Z^(-1) + aB) / (1 + aB * Z^(-1))
+# Y(Z)/X(Z) = (Z^(-1) + aB) / (1 + aB * Z^(-1))
+# Y1[n] = aB * X[n] + X[n-1] - aB * Y[n-1]
 
-A = 10**(G/20)
-H0 = A - 1
-wc = 2 * np.pi * fc / fs
+# Shelving LF para G=10dB e isso vai gerar um bo
 
-aB = (np.sin(wc) - np.cos(wc)) / (np.sin(wc) + np.cos(wc))
-C = np.sqrt(A)
+# fc = 1000 Hz
+# fs = 44100 Hz
 
-# --- Filtro all-pass ---
-# A(z) = (z^-1 + aB/C) / (1 + (aB/C) z^-1)
-b_ap = np.array([1, aB/C])
-a_ap = np.array([1, (aB/C)])
+# wc = 2 * pi * fc = 2 * pi * 1000 = 6283.185
+
+# Y1[n] = aB * X[n] + X[n-1] - aB * Y[n-1]
+# Y1[n] = 0.0086 * X[n] + X[n-1] - 0.0086 * Y[n-1]
+
+# H(Z) = 1 + H0/2 * [1+ (Z^(-1) + aB) / (1 + aB * Z^(-1))]
+# H(Z) = 1 + k * [1+ (Z^(-1) + aB) / (1 + aB * Z^(-1))]
+# H(Z) = 1 + k * [[(1 + aB * Z^(-1))+ (Z^(-1) + aB)] / (1 + aB * Z^(-1))]
+# H(Z) = 1 + [k(1 + aB) + [k * (aB + 1) * Z^(-1)] / (1 + aB * Z^(-1))
+# H(Z) = [(1+aB*Z^(-1)) + k(1+aB) + k*(aB+1)*Z^(-1)] / (1+aB*Z^(-1))
+# H(Z) = [k(1+aB) + (1+aB) + k*(aB+1)*Z^(-1)] / (1+aB*Z^(-1))
+
+#sweep
 
 
-w, A_z = signal.freqz(b_ap, a_ap, worN=2048)
-H = 1 + (H0/2) * (1 + A_z)  # Low-shelf (+)
-H_dB = 20*np.log10(abs(H))
-
-f = w * fs / (2*np.pi)
-plt.figure(figsize=(8,4))
-plt.semilogx(f, H_dB)
-plt.title("Low-Shelving Filter (1st-order all-pass method)")
-plt.xlabel("Frequência [Hz]")
-plt.ylabel("Ganho [dB]")
-plt.grid(True, which='both', ls='--')
-plt.axvline(fc, color='r', linestyle='--', label=f"fc={fc}Hz")
-plt.axhline(G, color='g', linestyle=':')
-plt.legend()
-plt.show()
