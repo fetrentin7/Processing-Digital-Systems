@@ -33,9 +33,8 @@ b_lf, a_lf = shelving_low(FS, FC_LF_HZ, GAIN_LF_DB)
 b_peak, a_peak = mf_peak(FS, FC_PEAK_HZ, FB_PEAK_HZ, GAIN_PEAK_DB)
 b_hf, a_hf = shelving_high(FS, FC_HF_HZ, GAIN_HF_DB)
 
-# ==========================
 # Aplicação dos filtros individualmente
-# ==========================
+
 y_lf = lfilter(b_lf, a_lf, sweep)
 y_peak = lfilter(b_peak, a_peak, sweep)
 y_hf = lfilter(b_hf, a_hf, sweep)

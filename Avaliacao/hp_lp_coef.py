@@ -61,7 +61,7 @@ def mf_peak(fs, fc, fb, G):
     a1 = d * (1 - a_BC)
     a2 = -a_BC
 
-    # Numerador (parte crítica)
+    # Numerador 
     b0 = 1 + K_H0 * (1 + a_BC)
     b1 = d * (1 - a_BC)
     b2 = -a_BC * (1 + K_H0) - K_H0
