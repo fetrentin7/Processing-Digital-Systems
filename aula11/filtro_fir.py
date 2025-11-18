@@ -5,11 +5,11 @@ from scipy.signal import convolve
 
 def moving_average_processing(sample_vector, coefficient_vector):
     """
-    Simple moving average system: y[n] = a0*x[n] + a1*x[n-1] + a2*x[n-2] + a3* x[n-3]
+    Simple moving average system: y[n] = a0* x[n] + a1* x[n-1] + a2* x[n-2] + a3* x[n-3]
     """
-    output = 0.0
-    for i in range(len(sample_vector)):
-        output += coefficient_vector[i] * sample_vector[i]
+    output = 0
+    for n in range(0, len(sample_vector)):
+        output += coefficient_vector[n] * sample_vector[n]
     return output
 
 
@@ -33,10 +33,15 @@ def process_lms(x, K):
 
         # Calculate desired output (moving average filter output)
         d = moving_average_processing(sample_vector, coefficient_vector)
+        print(f"d[{n}] = {d}")
+
         # Calculate adaptive filter output (dot product)
-        y = np.dot(w, sample_vector)  # <-- corrigido: produto interno (escalar)
+        y = convolve(sample_vector, w)
+        print(f"y[{n}] = {y}")
+
         # Calculate error
         e[n] = d - y
+        print(f"e[{n}] = {e[n]}")
 
         # Update filter coefficients using LMS algorithm
         w = update_w(w, e[n], sample_vector, MU)
@@ -52,6 +57,7 @@ def main():
         print("❌ Error: white-noise.pcm not found!")
         return
 
+    NUM_COEFFICIENTS = 8
     K_VALUE = 8
 
     e = process_lms(x, K_VALUE)
@@ -61,12 +67,15 @@ def main():
     print(f"   Max Error: {np.max(np.abs(e)):.2f}")
     print(f"   Min Error: {np.min(np.abs(e)):.2f}")
 
-    # Plot error signal
-    fig, axes = plt.subplots(1, 1, figsize=(14, 6))
-    fig.suptitle("LMS Adaptive Filter - Error Signal Analysis", fontsize=16)
+    # Create figure with subplots
+    fig, axes = plt.subplots(1, 1, figsize=(14, 10))
+    fig.suptitle(
+        "LMS Adaptive Filter - Error Signal Analysis", fontsize=16, fontweight="bold"
+    )
 
+    # Plot 1: Full error signal
     axes.plot(e, "b-", linewidth=0.5, alpha=0.7)
-    axes.set_title("Error Signal - Full View")
+    axes.set_title("Error Signal - Full View", fontweight="bold")
     axes.set_xlabel("Sample Index (n)")
     axes.set_ylabel("Error e[n]")
     axes.grid(True, alpha=0.3)
