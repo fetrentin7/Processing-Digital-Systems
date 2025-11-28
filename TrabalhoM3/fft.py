@@ -28,8 +28,7 @@ def fft(x):
     return resultado
 
 
-
-fs = 1000              #
+fs = 1000              
 T = 1                  
 N = fs * T             
 
@@ -39,10 +38,10 @@ freq_sinal = 50        # Hz
 # seno de 50 Hz
 x = np.sin(2 * np.pi * freq_sinal * t)
 
-# ---------- FFT ----------
+# FFT
 y = fft(x)
 
-# ---------- FREQUÊNCIAS ----------
+#FREQUÊNCIAS
 freqs = np.fft.fftfreq(N, 1/fs)
 
 
