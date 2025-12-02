@@ -28,26 +28,22 @@ def fft(x):
     return resultado
 
 
-fs = 1000              
-T = 1                  
-N = fs * T             
 
-t = np.linspace(0, T, N, endpoint=False)
-freq_sinal = 50        # Hz
+data = np.fromfile("TrabalhoM3/sweep-1.pcm", dtype=np.int16)
 
-# seno de 50 Hz
-x = np.sin(2 * np.pi * freq_sinal * t)
+# Normaliza para [-1,1]
+x = data.astype(np.float32) / 32768.0
 
 # FFT
 y = fft(x)
+N = len(x)
+fs = 48000  # ou 44100... depende do arquivo!
 
-#FREQUÊNCIAS
 freqs = np.fft.fftfreq(N, 1/fs)
 
-
-plt.figure(figsize=(12, 6))
-plt.plot(freqs[:N//2], np.abs(y[:N//2]), label="Magnitude FFT")
-plt.title("Espectro do Sinal (FFT)")
+plt.figure(figsize=(12,6))
+plt.plot(freqs[:N//2], np.abs(y[:N//2]))
+plt.title("FFT do sweep1-pcm")
 plt.xlabel("Frequência (Hz)")
 plt.ylabel("Magnitude")
 plt.grid(True)
